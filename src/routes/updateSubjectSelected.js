@@ -17,14 +17,14 @@ var uploadedFile;
 
 // Create a new customer
 
-router.post('/post', (req, res) => {
+router.post('/updateSubjectSelected', (req, res) => {
 
     new formidable.IncomingForm().parse(req)
 
 
 
         .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options 
-            console.log('Field', name, "'" + field + "'")
+            // console.log('Field', name, "'" + field + "'")
         })
 
 
@@ -42,7 +42,7 @@ router.post('/post', (req, res) => {
             throw err
         })
         .on('end', () => {
-            console.log(uploadedFile);
+            // console.log(uploadedFile);
             //to check if the files uploaded is xlsx if not it doesnt process further 
             var indexOfDot = uploadedFile.name.indexOf(".");
             if (uploadedFile.name.substring(indexOfDot + 1) !== "xlsx") {
@@ -75,25 +75,29 @@ router.post('/post', (req, res) => {
 
             //ARRAY OF OBJECTS //this piece of code adds the required data
             for (dataFromSheets of sheets) {
+                console.log(dataFromSheets)
                 for (individualObjects of excelData[dataFromSheets]) {
-                    if (individualObjects["NAME OF STUDENTS"] && individualObjects["SCHOOL NAME"] && individualObjects["CLASS"] && individualObjects["DISTRICT"] && individualObjects["CITY"] && individualObjects["STATE"]) {
-                        if (!(individualObjects["GK MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                            individualObjects["GK MARKS (100)"] = null;
-                        }
-                        if (!(individualObjects["MATHS MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                            individualObjects["MATHS MARKS (100)"] = null;
-                        }
+                    console.log(individualObjects)
 
-                        if (!(individualObjects["SCIENCE MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                            individualObjects["SCIENCE MARKS (100)"] = null;
-                        }
+
+                    if (individualObjects["NAME OF STUDENTS"] && individualObjects["SCHOOL NAME"] && individualObjects["CLASS"] && individualObjects["DISTRICT"] && individualObjects["CITY"] && individualObjects["STATE"] && individualObjects["SEAT NO"]) {
+
 
                         if (!(individualObjects["SEC"])) {  //assigning null when upload so that the SEC column doesnt disappear 
                             individualObjects["SEC"] = null;
                         }
 
+                        if (!(isNaN(individualObjects["CLASS"]))) {
+                            individualObjects["CLASS"] = parseInt(individualObjects["CLASS"]);
+                        }
 
-                       
+                        if (!(individualObjects["_id"])) {
+                            individualObjects["_id"] = individualObjects["SEAT NO"];
+                        }
+
+
+
+
 
                         // console.log(individualObjects["_id"].substring(0,2));
                     }
@@ -103,6 +107,7 @@ router.post('/post', (req, res) => {
                     for (individualObjectKey in individualObjects) {
                         if (individualObjectKey.indexOf("MARKS") !== -1) {
                             individualObjectKeyToCheck = individualObjectKey.substring(0, ((individualObjectKey.indexOf("MARKS")) - 1));
+                            
                         }
                         else {
                             individualObjectKeyToCheck = individualObjectKey.substring(0);
@@ -111,8 +116,10 @@ router.post('/post', (req, res) => {
                         }
 
                         if (["_id", "NAME OF STUDENTS", "SCHOOL NAME", "CLASS", "STATE", "DISTRICT", "CITY", "SEC", "GK", "MATHS", "SCIENCE"].indexOf(individualObjectKeyToCheck) === -1) {
-                            delete individualObjects[individualObjectKey];
-                            console.log("key value deleted ", ["_id", "NAME OF STUDENTS", "SCHOOL NAME", "CLASS", "STATE", "DISTRICT", "CITY", "SEC", "GK", "MATHS", "SCIENCE"].indexOf(individualObjectKeyToCheck), " ", individualObjectKeyToCheck)
+                            // if (["_id", "NAME OF STUDENTS", "SCHOOL NAME", "CLASS", "STATE", "DISTRICT", "CITY", "SEC"].indexOf(individualObjectKey) === -1 && individualObjectKey.indexof("MARKS") === -1 ) {
+                            console.log("key value deleted ", individualObjectKey, individualObjects[individualObjectKey])
+                            delete individualObjects[individualObjectKey];  //will surely delete seat number as we do not require seat number but _id
+
                         }
                     }
                 }
@@ -127,24 +134,34 @@ router.post('/post', (req, res) => {
                 for (sheet of sheets) {
 
                     for (document of excelData[sheet]) {
-                        // console.log(document);
+                        console.log(document);
                         if (document["NAME OF STUDENTS"] && document["SCHOOL NAME"] && document["CLASS"] && document["DISTRICT"] && document["CITY"] && document["STATE"] && document["_id"]) {
 
+
+                            let finder = { "_id": document["_id"] }
+                            delete document["_id"];
                             // console.log(finder);
+                            console.log(document);
+
+
+
                             dbo.collection("customers")
 
-                            .updateOne(
-                                finder,
-                                { $set: document },
-                                { upsert: true, safe: false },
-                                function (err, data) {
-                                  if (err) {
-                                    console.log(err);
-                                  } else {
-                                    console.log("object uploaded");
-                                  }
-                                }
-                              )
+                                .updateOne(
+                                    finder,
+                                    { $set: document },
+                                    { upsert: true, safe: false },
+                                    function (err, data) {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            console.log("object uploaded");
+                                            // console.log(document)
+                                        }
+                                    }
+                                )
+
+
 
                         }
                     }

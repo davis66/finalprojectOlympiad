@@ -1,0 +1,30 @@
+'updateparameter' will be used to update the document and will contain only subject section 
+'parameterwithoutmarks' will be used to find documents 
+'parameterobject' will be used to form the updaete parameter
+
+
+
+post is used to post details o the students but you can also select selecetd subject together although cant be used if the details are duplicate which is done to avoid giving the same student multiple 
+seat number. now what if the student names are same which is very much possible it woul dbe rather efficient if its not 
+usually even in the university exams the work around for this is using mohers and fathers name in the mddle of the name 
+this could be eaily avoided also if we use roll number instead of name to identify students (in which case we have to add additional column of roll number to be checked if duplicate)
+
+
+updateSubjectfile.js will be used to update the subject sleceted as name suggests , yes itll will get the selecetd subjects as well empty cell(but will be shown as NA) for particular subject if given in parameter 
+form also could be used to simply fetch data as well using the seatnumber or other common parameters like class school etc 
+but the main purpose of this module is to get the list of students update their selecetd subjects for exams
+
+
+updatesubject selecetd wioll be used to update marks this will check if the subject selecetd are NA itll mark it as "" in the update document ,his will get set in the database and will be immediately 
+unset so it doesnt waste any space  
+
+
+
+in order to fetch the selected subject to get update marks a different is set up this will not create a by defaault empty column with value as NA 
+itll be instead be replaced with - which would tell the user these subjects were initially sleceted 
+// this could also be set to empty columns although the  user will have to make sure he types in every field or itll be deleted 
+in order to make sure its not deleted a additonal module will be required thatll make sure any empty column will be replaced by - 
+this module will be filled up and sent using the same module that is used to update the seleected subjects 
+
+
+seat

@@ -42,7 +42,7 @@ router.post('/post', (req, res) => {
       throw err
     })
     .on('end', () => {
-      console.log(uploadedFile);
+      // console.log(uploadedFile);
       //to check if the files uploaded is xlsx if not it doesnt process further 
       var indexOfDot = uploadedFile.name.indexOf(".");
       if (uploadedFile.name.substring(indexOfDot + 1) !== "xlsx") {
@@ -93,6 +93,7 @@ router.post('/post', (req, res) => {
               locationObject[document.STATE][document.DISTRICT][document.CITY][document.CLASS]["count"] += 1;
             }
           }
+          console.log(JSON.stringify(locationObject,null,3));
 
           ////////////////////////////////////
 
@@ -101,30 +102,35 @@ router.post('/post', (req, res) => {
           //to get data which is in the form of sheets we need the keys  
           let sheets = Object.keys(excelData)
           console.log(sheets);  // gives sheetes array 
-
+          let deletecounter=1;
           //ARRAY OF OBJECTS //this piece of code adds the required data
           for (dataFromSheets of sheets) {
+            
             for (individualObjects of excelData[dataFromSheets]) {
               if (individualObjects["NAME OF STUDENTS"] && individualObjects["SCHOOL NAME"] && individualObjects["CLASS"] && individualObjects["DISTRICT"] && individualObjects["CITY"] && individualObjects["STATE"]) {  //consider nested if for faster execution
 
-                let deleteIndicator = 0;                                                   //to delete if the data has been already enetered // check for better code 
+                let deleteIndicator = 0;                                                   //to delete if the data has been already enetered TO AVOID DUPLLICATION and alloting one student another seat number // check for better code 
                 for (document of result) {
                   if (document["STATE"] === individualObjects["STATE"]) {        //comparing data from database to data from excel sheet
                     if (document["DISTRICT"] === individualObjects["DISTRICT"]) {
                       if (document["CITY"] === individualObjects["CITY"]) {
                         if (document["SCHOOL NAME"] === individualObjects["SCHOOL NAME"]) {
                           if (document["CLASS"] === individualObjects["CLASS"]) {
-                            if (document["NAME OF STUDENTS"] === individualObjects["NAME OF STUDENTS"]) {
-                            
-                      deleteIndicator = 1;
+                            // console.log(individualObjects["CLASS"])
+                            if (document["NAME OF STUDENTS"] === individualObjects["NAME OF STUDENTS"]) { // to keep it unique use mothers and fathers name along with the students 
+
+                              // console.log(document["NAME OF STUDENTS"])
+                              deleteIndicator = 1;
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
-              }
-            }
-          }
-        }
                 if (deleteIndicator == 1) {
+                  console.log(deletecounter);
+                  deletecounter++;
                   delete individualObjects;
                   continue;                      //break loop if individual object has been deleted to avoid error and further proccessing in the loop 
                 }
@@ -132,18 +138,18 @@ router.post('/post', (req, res) => {
 
 
 
+                //not rquired 
+                // if (!(individualObjects["GK MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear in the database
+                //   individualObjects["GK MARKS (100)"] = null;
+                // }
+                // if (!(individualObjects["MATHS MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear in the database
+                //   individualObjects["MATHS MARKS (100)"] = null;
+                // }
 
-                if (!(individualObjects["GK MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                  individualObjects["GK MARKS (100)"] = null;
-                }
-                if (!(individualObjects["MATHS MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                  individualObjects["MATHS MARKS (100)"] = null;
-                }
-                
-                if (!(individualObjects["SCIENCE MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear 
-                  individualObjects["SCIENCE MARKS (100)"] = null;
-                }
-                
+                // if (!(individualObjects["SCIENCE MARKS (100)"])) {  //assigning null when upload so that the MARKS column doesnt disappear in the database
+                //   individualObjects["SCIENCE MARKS (100)"] = null;
+                // }
+
                 if (!(individualObjects["SEC"])) {  //assigning null when upload so that the SEC column doesnt disappear 
                   individualObjects["SEC"] = null;
                 }
@@ -151,7 +157,7 @@ router.post('/post', (req, res) => {
                   delete individualObjects["SR NO"]
                 }
 
-                if (!(individualObjects["_id"])) {
+                if (!(individualObjects["_id"])) {  //condition not really required as _id or seat number havent been assigned and if it has then itll be deleted to process 
 
 
                   if (!(locationObject[individualObjects.STATE])) {
@@ -180,7 +186,7 @@ router.post('/post', (req, res) => {
 
 
                 }
-                
+
                 // console.log(individualObjects["_id"].substring(0,2));
               }
               else {
@@ -188,6 +194,7 @@ router.post('/post', (req, res) => {
               }
               for (individualObjectKey in individualObjects) {
                 if (individualObjectKey.indexOf("MARKS") !== -1) {
+
                   individualObjectKeyToCheck = individualObjectKey.substring(0, ((individualObjectKey.indexOf("MARKS")) - 1));
                 }
                 else {
@@ -215,16 +222,16 @@ router.post('/post', (req, res) => {
               for (document of excelData[sheet]) {
                 // console.log(document);
                 if (document["NAME OF STUDENTS"] && document["SCHOOL NAME"] && document["CLASS"] && document["DISTRICT"] && document["CITY"] && document["STATE"] && document["_id"]) {
-                 
+
                   // console.log(finder);
                   dbo.collection("customers")
 
                     .insertOne(document)
-                    
+
                 }
               }
             }
-            console.log(uploadedFile.path);
+            // console.log(uploadedFile.path);
 
             db.close();
 

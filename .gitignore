@@ -1,3 +1,4 @@
 node_modules
 some.js
-GK2.xlsx
+
+*.xlsx
