@@ -2,12 +2,14 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net/new";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 const xlsx = require('tfk-json-to-xlsx')
 const path = require('path');
 var DOWNLOAD_DIR = path.join(process.env.HOME || process.env.USERPROFILE, 'downloads/');
-let defaultrequiredDataColumns = ["SEAT NO", "NAME OF STUDENTS", "CLASS", "SEC", "SCHOOL NAME", "CITY", "DISTRICT", "STATE"]
+let defaultrequiredDataColumns = ["SEAT NO", "NAME OF STUDENTS", "CLASS", "SEC", "SCHOOL NAME", "CITY", "DISTRICT", "STATE"];
+const logger = require("../config/config").logger;
+
 
 
 
@@ -18,11 +20,14 @@ router.get('/getUpdateFile', (req, res) => {
 
     let parameterObjectWithoutSubject = {};
 
+    let fieldAndNameArray = [];
+
     new formidable.IncomingForm().parse(req)
         .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options 
             // console.log('Field', name, ":", field, typeof (field))
             name = name.toUpperCase();
             field = field.toUpperCase().trim();
+            fieldAndNameArray.push([name,field]);
 
             if (field) {             //process only if the field is not empty
                 if (!(isNaN(field))) {
@@ -42,19 +47,22 @@ router.get('/getUpdateFile', (req, res) => {
             }
         })
         .on('file', (name, file) => {
-            console.log('Uploaded file', name, file.name)
+            logger.info('Uploaded file', name, file.name)
         })
         .on('aborted', () => {
-            console.error('Request aborted by the user')
+            logger.error('Request aborted by the user')
         })
         .on('error', (err) => {
-            console.error('Error', err)
+            logger.error('Error', err)
             throw err
         })
         .on('end', () => {
             let resultToDisplay = [];
             let updateParameter = {};
 
+            logger.info(fieldAndNameArray);
+
+            var seconds = new Date().getTime() / 1000; //timer starts 
 
 
             for (iterator = 1; iterator <= 3; iterator++) {
@@ -71,14 +79,14 @@ router.get('/getUpdateFile', (req, res) => {
                 }
             }
 
-            if (parameterObjectWithoutSubject["SEAT NO"]){
-                parameterObjectWithoutSubject["_id"] = parameterObjectWithoutSubject["SEAT NO"];
-                delete parameterObjectWithoutSubject["SEAT NO"];
+            if (parameterObjectWithoutSubject["SEAT NO"]) {
+                parameterObjectWithoutSubject["_id"] = parameterObjectWithoutSubject["SEAT NO"] ;
+                delete parameterObjectWithoutSubject["SEAT NO"] ; 
             }
 
-            console.log(parameterObjectWithoutSubject); // used to pick all the data apart from subject section
-            console.log(parameterObject); // to be used as a parameter to update marks (so module 3 - update marks file)// although here it is used to be aded in required data array
-            console.log(updateParameter); // to be used if the subjects selected werent first updated //exclusively for marks //also to add column in excel sheet 
+            logger.info(`${JSON.stringify(parameterObjectWithoutSubject)} , parameterobjectwithoutsubject`); // used to pick all the data apart from subject section
+           
+            logger.info(`${JSON.stringify(updateParameter)}, updateParameter`); // to be used if the subjects selected werent first updated //exclusively for marks //also to add column in excel sheet 
 
 
 
@@ -99,13 +107,13 @@ router.get('/getUpdateFile', (req, res) => {
             MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
                 if (err) throw err;
 
-                var dbo = db.db("new");
+                var dbo = db.db("students");
 
-                dbo.collection("customers").find(parameterObjectWithoutSubject).toArray(function (err, result) {   //GETS ALL DATA WITH RESPECT TO PARAMETERES SELECTED OR ELSE IT GIVES ALL THE DATA IF NOT MENTIONED 
+                dbo.collection("details").find(parameterObjectWithoutSubject).toArray(function (err, result) {   //GETS ALL DATA WITH RESPECT TO PARAMETERES SELECTED OR ELSE IT GIVES ALL THE DATA IF NOT MENTIONED 
                     if (err) throw err;
                     for (individualDocument of result) {
 
-                        
+
 
                         individualDocument["SEAT NO"] = individualDocument["_id"];
 
@@ -120,23 +128,23 @@ router.get('/getUpdateFile', (req, res) => {
                             "STATE": `${individualDocument["STATE"]}`
 
                         };
-                        for (eachMarksParameter in updateParameter){                                        // to add update parameters which will be null 
+                        for (eachMarksParameter in updateParameter) {                                        // to add update parameters which will be null 
                             finalResultDocument[eachMarksParameter] = updateParameter[eachMarksParameter];
                         }
 
                         for (informationKeys in individualDocument) {  //individualdocuments of result
                             if (requiredDataColumns.indexOf(informationKeys) === -1 && Object.keys(updateParameter).length != 0) {
                                 delete individualDocument[informationKeys];                 //deletes thw data which is not required especially done for other subjects marks data if selected
-                                // console.log(deleted);
+                                // console.log("deleted",informationKeys);
                                 continue;
                             }
-                            
+
                             if (informationKeys.indexOf("MARKS") !== -1) {
                                 finalResultDocument[informationKeys] = "-"; // subjects which are already selected so that i could be reminded if changes needs to be made
                             }
-                            
 
-                            
+
+
                         }
 
 
@@ -145,15 +153,20 @@ router.get('/getUpdateFile', (req, res) => {
                     }
 
 
-                            xlsx.write(`${DOWNLOAD_DIR}/updateSubjects.xlsx`, resultToDisplay, function (error) {
-                                // Error handling here
-                                if (error) {
-                                    console.error(error)
-                                }
-                                else {
-                                    console.log("doc ready" + DOWNLOAD_DIR);
-                                }
-                            })
+
+                    xlsx.write(`${DOWNLOAD_DIR}/updateSubjects.xlsx`, resultToDisplay, function (error) {
+                        // Error handling here
+                        if (error) {
+                            logger.error(error);
+                        }
+                        else {
+                            console.log("doc ready" + DOWNLOAD_DIR);
+                            logger.info("doc ready" + DOWNLOAD_DIR);
+                            var lastSeconds = new Date().getTime() / 1000;
+                            logger.info(`time taken ${lastSeconds - seconds}`);
+                            logger.info("");
+                        }
+                    })
                 })
             })
             res.end()

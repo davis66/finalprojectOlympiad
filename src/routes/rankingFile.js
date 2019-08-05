@@ -2,20 +2,20 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 const xlsx = require('tfk-json-to-xlsx')
 const path = require('path');
 var DOWNLOAD_DIR = path.join(process.env.HOME || process.env.USERPROFILE, 'downloads/');
 let defaultrequiredDataColumns = ["SEAT NO", "NAME OF STUDENTS", "CLASS", "SEC", "SCHOOL NAME", "CITY", "DISTRICT", "STATE"]
-
-
+const logger = require("../config/config").logger;
 
 
 
 router.get('/rankFile', (req, res) => {
     var parameterObject = {};
     var iteratorLoop = 0;
+    let fieldAndNameArray = [];
 
 
     new formidable.IncomingForm().parse(req)
@@ -27,7 +27,7 @@ router.get('/rankFile', (req, res) => {
 
             if (name.indexOf("SUBJECT") !== -1 || name.indexOf("MARKS") !== -1) {
                 iteratorLoop++;
-                console.log(name)
+                // console.log(name)
             }
 
 
@@ -36,14 +36,14 @@ router.get('/rankFile', (req, res) => {
                     field = parseInt(field)
                 }
                 parameterObject[name] = field;
-
+                fieldAndNameArray.push([name, field]);
             }
 
 
 
         })
         .on('file', (name, file) => {
-            console.log('Uploaded file', name, file.name)
+            // console.log('Uploaded file', name, file.name)
         })
         .on('aborted', () => {
             console.error('Request aborted by the user')
@@ -54,6 +54,8 @@ router.get('/rankFile', (req, res) => {
         })
         .on('end', () => {
             let resultToDisplay = [];
+            var seconds = new Date().getTime() / 1000;
+            logger.info(fieldAndNameArray);
             // console.log(iteratorLoop);
             iteratorLoop = Math.round(iteratorLoop / 2);
             // console.log(iteratorLoop)
@@ -67,7 +69,7 @@ router.get('/rankFile', (req, res) => {
             }
 
 
-            console.log(parameterObject, "parameterObject"); // to be used as a parameter to update marks (so module 3 - update marks file)// although here it is used to be aded in required data array
+            // console.log(parameterObject, "parameterObject"); // to be used as a parameter to update marks (so module 3 - update marks file)// although here it is used to be aded in required data array
 
 
 
@@ -127,7 +129,7 @@ router.get('/rankFile', (req, res) => {
                 }
                 return sumOfb - sumOfa;
             });
-            console.log(subsets);
+            // console.log(subsets);
 
 
             requiredDataColumns = requiredDataColumns.concat(Object.keys(parameterObject).filter(function (item) {
@@ -137,7 +139,7 @@ router.get('/rankFile', (req, res) => {
             requiredDataColumns = requiredDataColumns.concat(defaultrequiredDataColumns.filter(function (item) {
                 return requiredDataColumns.indexOf(item) < 0;
             }));
-            console.log(requiredDataColumns);
+            // console.log(requiredDataColumns);
             // console.log(rankingIn, "rankingIn");
 
 
@@ -145,7 +147,7 @@ router.get('/rankFile', (req, res) => {
             MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
                 if (err) throw err;
 
-                var dbo = db.db("RankDatabase");
+                var dbo = db.db("students");
 
                 dbo.collection("ranks").find(parameterObject).toArray(function (err, result) {   //GETS ALL DATA WITH RESPECT TO PARAMETERES SELECTED OR ELSE IT GIVES ALL THE DATA IF NOT MENTIONED 
                     if (err) throw err;
@@ -233,20 +235,25 @@ router.get('/rankFile', (req, res) => {
                         }
 
                     }
-                    console.log(resultToDisplay);
+                    // console.log(resultToDisplay);
 
 
                     xlsx.write(`${DOWNLOAD_DIR}/rank.xlsx`, resultToDisplay, function (error) {
                         // Error handling here
                         if (error) {
-                            console.error(error)
+                            logger.error(error)
                         }
                         else {
                             console.log("doc ready" + DOWNLOAD_DIR);
+                            var lastSeconds = new Date().getTime() / 1000;
+                            logger.info(`time taken ${lastSeconds - seconds}`);
+                            logger.info("");
+                        
                         }
                     })
                 })
             })
+            // winston.logger.info("rankfile");
             res.end()
         })
 

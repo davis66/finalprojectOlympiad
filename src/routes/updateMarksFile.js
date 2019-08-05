@@ -2,13 +2,13 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net/new";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 const xlsx = require('tfk-json-to-xlsx')
 const path = require('path');
 var DOWNLOAD_DIR = path.join(process.env.HOME || process.env.USERPROFILE, 'downloads/');
 let defaultrequiredDataColumns = ["SEAT NO", "NAME OF STUDENTS", "CLASS", "SEC", "SCHOOL NAME", "CITY", "DISTRICT", "STATE"]
-
+const logger = require("../config/config").logger;
 
 
 
@@ -16,16 +16,17 @@ let defaultrequiredDataColumns = ["SEAT NO", "NAME OF STUDENTS", "CLASS", "SEC",
 router.get('/getUpdateMarksFile', (req, res) => {
     var parameterObject = {};
     var iteratorLoop = 0;
-    
+    let fieldAndNameArray = [];
+
 
     new formidable.IncomingForm().parse(req)
         .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options 
             // console.log('Field', name, ":", field, typeof (field))
             name = name.toUpperCase();
             field = field.toUpperCase().trim();
+            fieldAndNameArray.push([name, field]);
 
-
-            if(name.indexOf("SUBJECT") !== -1 || name.indexOf("MARKS") !== -1 ){
+            if (name.indexOf("SUBJECT") !== -1 || name.indexOf("MARKS") !== -1) {
                 iteratorLoop++;
             }
 
@@ -37,24 +38,26 @@ router.get('/getUpdateMarksFile', (req, res) => {
                 parameterObject[name] = field;
 
             }
-            
+
 
 
         })
         .on('file', (name, file) => {
-            console.log('Uploaded file', name, file.name)
+            logger.info(`Uploaded file: ${file.name}`)
         })
         .on('aborted', () => {
-            console.error('Request aborted by the user')
+            loggeer.error('Request aborted by the user')
         })
         .on('error', (err) => {
-            console.error('Error', err)
+            logger.error('Error', err)
             throw err
         })
         .on('end', () => {
             let resultToDisplay = [];
-            
-            iteratorLoop = Math.round(iteratorLoop/2);
+            var seconds = new Date().getTime() / 1000;
+
+            logger.info(fieldAndNameArray);
+            iteratorLoop = Math.round(iteratorLoop / 2);
 
 
             for (iterator = 1; iterator <= iteratorLoop; iterator++) {         //iteration can be incremented to accomodate more subject mark parameter  //iteration to be automized
@@ -71,14 +74,14 @@ router.get('/getUpdateMarksFile', (req, res) => {
                 }
             }
 
-            if (parameterObject["SEAT NO"]){
+            if (parameterObject["SEAT NO"]) {
                 parameterObject["_id"] = parameterObject["SEAT NO"];
                 delete parameterObject["SEAT NO"];
             }
 
-            
+
             console.log(parameterObject, "parameterObject"); // to be used as a parameter to update marks (so module 3 - update marks file)// although here it is used to be aded in required data array
-           
+
 
 
 
@@ -91,7 +94,7 @@ router.get('/getUpdateMarksFile', (req, res) => {
             requiredDataColumns = requiredDataColumns.concat(defaultrequiredDataColumns.filter(function (item) {
                 return requiredDataColumns.indexOf(item) < 0;
             }));
-            console.log(requiredDataColumns); 
+            console.log(requiredDataColumns);
 
 
 
@@ -108,7 +111,7 @@ router.get('/getUpdateMarksFile', (req, res) => {
                     for (individualDocument of result) {
                         // console.log(individualDocument,"that");
 
-                        
+
 
                         individualDocument["SEAT NO"] = individualDocument["_id"];   //_id will be deleted automatically 
                         delete individualDocument["_id"];
@@ -124,20 +127,20 @@ router.get('/getUpdateMarksFile', (req, res) => {
                             "STATE": `${individualDocument["STATE"]}`
 
                         };
-                       
+
 
                         for (informationKeys in individualDocument) {  //individualdocuments of result
-                            
+
                             if (requiredDataColumns.indexOf(informationKeys) === -1 && iteratorLoop !== 0) {
 
                                 delete individualDocument[informationKeys];                 //deletes thw data which is not required especially done for other subjects marks data if selected//marks get deleted here 
                                 console.log("deleted");
                             }
-                            else if (!(finalResultDocument[informationKeys])){
-                                finalResultDocument[informationKeys] =individualDocument[informationKeys];
+                            else if (!(finalResultDocument[informationKeys])) {
+                                finalResultDocument[informationKeys] = individualDocument[informationKeys];
                             }
 
-                            
+
                         }
 
 
@@ -147,15 +150,19 @@ router.get('/getUpdateMarksFile', (req, res) => {
                     // console.log(resultToDisplay);
 
 
-                            xlsx.write(`${DOWNLOAD_DIR}/updateMarks.xlsx`, resultToDisplay, function (error) {
-                                // Error handling here
-                                if (error) {
-                                    console.error(error)
-                                }
-                                else {
-                                    console.log("doc ready" + DOWNLOAD_DIR);
-                                }
-                            })
+                    xlsx.write(`${DOWNLOAD_DIR}/updateMarks.xlsx`, resultToDisplay, function (error) {
+                        // Error handling here
+                        if (error) {
+                            logger.error(error)
+                        }
+                        else {
+                            console.log("doc ready" + DOWNLOAD_DIR);
+                            var lastSeconds = new Date().getTime() / 1000;
+                            logger.info(`time taken ${lastSeconds - seconds}`);
+                            logger.info("");
+                        }
+                    })
+
                 })
             })
             res.end()

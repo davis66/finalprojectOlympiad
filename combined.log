@@ -1,0 +1,128 @@
+{"message":"Mon Aug 05 2019 10:13:29 GMT+0530 (India Standard Time) => /post","level":"info"}
+{"message":"Uploaded file, file, studentDetails.xlsx","level":"info"}
+{"message":"posting student details on Mon Aug 05 2019 10:13:29 GMT+0530 (India Standard Time)","level":"info"}
+{"message":"[1ST,2ND,3RD,4TH,5TH] ,excel sheets","level":"info"}
+{"message":"documents deleted , duplicate = 70, invalid = 2 out of 72","level":"info"}
+{"message":"time taken 3.4719998836517334","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 10:48:55 GMT+0530 (India Standard Time) => /getUpdateFile","level":"info"}
+{"message":[["MARKS1","100"],["SUBJECT2","SCIENCE"],["MARKS2","100"],["SUBJECT1","MATHS"],["SUBJECT3","GK"],["MARKS3","100"]],"level":"info"}
+{"message":"{} , parameterobjectwithoutsubject","level":"info"}
+{"message":"{\"MATHS MARKS (100)\":\"NA\",\"SCIENCE MARKS (100)\":\"NA\",\"GK MARKS (100)\":\"NA\"}, updateParameter","level":"info"}
+{"message":"doc readyC:\\Users\\JJPL205\\downloads\\","level":"info"}
+{"message":"time taken 2.321000099182129","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 10:54:07 GMT+0530 (India Standard Time) => /updateSubjectSelected","level":"info"}
+{"message":"Uploaded file: updateSubjectsfilled.xlsx","level":"info"}
+{"message":["Data"],"level":"info"}
+{"level":"info","message":""}
+{"message":"time taken 1.7239999771118164","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:11:21 GMT+0530 (India Standard Time) => /updateSubjectSelected","level":"info"}
+{"message":"Uploaded file: updateSubjectsfilled.xlsx","level":"info"}
+{"message":"Data, sheets in the excel sheet","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:11:43 GMT+0530 (India Standard Time) => /updateSubjectSelected","level":"info"}
+{"message":"Uploaded file: updateSubjectsfilled.xlsx","level":"info"}
+{"message":"Data, sheets in the excel sheet","level":"info"}
+{"message":"time taken 1.6329998970031738","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:25:16 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.2039999961853027","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:28:47 GMT+0530 (India Standard Time) => /updateSubjectSelected","level":"info"}
+{"message":"Uploaded file: marksfilled.xlsx","level":"info"}
+{"message":"Data, sheets in the excel sheet","level":"info"}
+{"message":"time taken 1.6319999694824219","level":"info"}
+{"message":"","level":"info"}
+{"message":"Mon Aug 05 2019 11:28:54 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.3420000076293945","level":"info"}
+{"message":"","level":"info"}
+{"message":"Mon Aug 05 2019 11:29:15 GMT+0530 (India Standard Time) => /updateSubjectSelected","level":"info"}
+{"message":"Uploaded file: marksfilled.xlsx","level":"info"}
+{"message":"Data, sheets in the excel sheet","level":"info"}
+{"message":"time taken 1.5749998092651367","level":"info"}
+{"message":"","level":"info"}
+{"message":"Mon Aug 05 2019 11:29:24 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.2039999961853027","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:31:05 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.486999988555908","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:33:32 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:34:47 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:35:46 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 4.259999990463257","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:36:32 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.7720000743865967","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:37:11 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.3930001258850098","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:38:43 GMT+0530 (India Standard Time) => /rankFile/abc","level":"info"}
+{"message":"status 404","level":"info"}
+{"message":"Mon Aug 05 2019 11:38:50 GMT+0530 (India Standard Time) => /rankFile/abc","level":"info"}
+{"message":"status 404","level":"info"}
+{"message":"Mon Aug 05 2019 11:39:06 GMT+0530 (India Standard Time) => /rankFile","level":"info"}
+{"message":[],"level":"info"}
+{"message":"time taken 1.8350000381469727","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:42:51 GMT+0530 (India Standard Time) => /generateRanking","level":"info"}
+{"message":"time taken 3.625","level":"info"}
+{"message":"","level":"info"}
+{"message":"server has gone live","level":"info"}
+{"message":"Mon Aug 05 2019 11:43:33 GMT+0530 (India Standard Time) => /rankFile","level":"info"}
+{"message":[["CLASS",1],["MARKS1",100],["SUBJECT2","GK"],["MARKS2",100],["SUBJECT1","SCIENCE"],["SUBJECT3","MATHS"],["MARKS3",100]],"level":"info"}
+{"message":"time taken 2.001000165939331","level":"info"}
+{"message":"","level":"info"}

@@ -3,9 +3,11 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net/new";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 const excelToJson = require('convert-excel-to-json');
+const logger = require("../config/config").logger
+
 
 var uploadedFile;
 
@@ -23,29 +25,32 @@ router.post('/post', (req, res) => {
 
 
 
-    .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options 
-      console.log('Field', name, "'" + field + "'")
+    .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options //not used because this module will only except file 
+     
     })
 
 
     .on('file', (name, file) => {
-      console.log('Uploaded file', name, file.name)
+      logger.info(`Uploaded file: ${file.name}`)
       // var fileName= file.name;
 
       uploadedFile = file;
     })
     .on('aborted', () => {
-      console.error('Request aborted by the user')
+      logger.error('Request aborted by the user')
     })
     .on('error', (err) => {
-      console.error('Error', err)
+      logger.error('Error', err)
       throw err
     })
     .on('end', () => {
+      var seconds = new Date().getTime() / 1000;
+      
       // console.log(uploadedFile);
       //to check if the files uploaded is xlsx if not it doesnt process further 
       var indexOfDot = uploadedFile.name.indexOf(".");
       if (uploadedFile.name.substring(indexOfDot + 1) !== "xlsx") {
+        logger.info("the file uploaded is not a .xlsx");
         return res.status(400).send('the file uploaded is not a .xlsx');
       }
       /////////////////////////////////////////////////////////////
@@ -69,10 +74,10 @@ router.post('/post', (req, res) => {
       MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
         if (err) throw err;
 
-        let dbo = db.db("new");
+        let dbo = db.db("students");
 
 
-        dbo.collection("customers").find({}).toArray(function (err, result) { // can add present year here 
+        dbo.collection("details").find({}).toArray(function (err, result) { // can add present year here 
           if (err) throw err;
 
           var locationObject = {};
@@ -101,12 +106,15 @@ router.post('/post', (req, res) => {
 
           //to get data which is in the form of sheets we need the keys  
           let sheets = Object.keys(excelData)
-          console.log(sheets);  // gives sheetes array 
-          let deletecounter=1;
+          logger.info(`[${sheets}] ,excel sheets`);  // gives sheetes array 
+          let duplicatecounter = 0;
+          let documentcounter = 0;
+          let invalidcounter = 0;
           //ARRAY OF OBJECTS //this piece of code adds the required data
           for (dataFromSheets of sheets) {
             
             for (individualObjects of excelData[dataFromSheets]) {
+              documentcounter++;
               if (individualObjects["NAME OF STUDENTS"] && individualObjects["SCHOOL NAME"] && individualObjects["CLASS"] && individualObjects["DISTRICT"] && individualObjects["CITY"] && individualObjects["STATE"]) {  //consider nested if for faster execution
 
                 let deleteIndicator = 0;                                                   //to delete if the data has been already enetered TO AVOID DUPLLICATION and alloting one student another seat number // check for better code 
@@ -129,8 +137,8 @@ router.post('/post', (req, res) => {
                   }
                 }
                 if (deleteIndicator == 1) {
-                  console.log(deletecounter);
-                  deletecounter++;
+                  // console.log(duplicatecounter);
+                  duplicatecounter++;
                   delete individualObjects;
                   continue;                      //break loop if individual object has been deleted to avoid error and further proccessing in the loop 
                 }
@@ -191,6 +199,7 @@ router.post('/post', (req, res) => {
               }
               else {
                 console.log(individualObjects, "rejected");  //rejected docs
+                invalidcounter++;
               }
               for (individualObjectKey in individualObjects) {
                 if (individualObjectKey.indexOf("MARKS") !== -1) {
@@ -209,13 +218,17 @@ router.post('/post', (req, res) => {
                 }
               }
             }
+            
+          }
+          if (duplicatecounter > 0 || invalidcounter > 0){
+            logger.info(`documents deleted , duplicate = ${duplicatecounter}, invalid = ${invalidcounter} out of ${documentcounter}`)
           }
 
 
           MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
             if (err) throw err;
 
-            var dbo = db.db("new");
+            var dbo = db.db("students");
 
             for (sheet of sheets) {
 
@@ -224,7 +237,7 @@ router.post('/post', (req, res) => {
                 if (document["NAME OF STUDENTS"] && document["SCHOOL NAME"] && document["CLASS"] && document["DISTRICT"] && document["CITY"] && document["STATE"] && document["_id"]) {
 
                   // console.log(finder);
-                  dbo.collection("customers")
+                  dbo.collection("details")
 
                     .insertOne(document)
 
@@ -232,7 +245,9 @@ router.post('/post', (req, res) => {
               }
             }
             // console.log(uploadedFile.path);
-
+            var lastSeconds = new Date().getTime() / 1000;
+            logger.info(`time taken ${lastSeconds-seconds}`);
+            logger.info("");
             db.close();
 
           })
@@ -243,6 +258,7 @@ router.post('/post', (req, res) => {
 
       // console.log(excelData);
       res.send('uploaded');
+     
       res.end()
     })
 

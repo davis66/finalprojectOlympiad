@@ -1,10 +1,10 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 
-
+const logger = require("../config/config").logger;
 
 
 router.post('/generateRanking', (req, res) => {
@@ -14,24 +14,25 @@ router.post('/generateRanking', (req, res) => {
 
 
         .on('field', (name, field) => {                  //to parse field data ..to be further used to pass filter options 
-            console.log('Field', name, "'" + field + "'")
+            // console.log('Field', name, "'" + field + "'")
         })
 
 
         .on('file', (name, file) => {
-            console.log('Uploaded file', name, file.name)
+            // loggere.info('Uploaded file', name, file.name)
             // var fileName= file.name;
 
             uploadedFile = file;
         })
         .on('aborted', () => {
-            console.error('Request aborted by the user')
+            logger.error('Request aborted by the user')
         })
         .on('error', (err) => {
-            console.error('Error', err)
+            logger.error('Error', err)
             throw err
         })
         .on('end', () => {
+            var seconds = new Date().getTime() / 1000;
 
 
 
@@ -40,10 +41,10 @@ router.post('/generateRanking', (req, res) => {
             MongoClient.connect(url, { useNewUrlParser: true }, function (err, db) {
                 if (err) throw err;
 
-                let dbo = db.db("new");
+                let dbo = db.db("students");
 
 
-                dbo.collection("customers").find({}).toArray(function (err, result) { // can add present year here 
+                dbo.collection("details").find({}).toArray(function (err, result) { // can add present year here 
                     if (err) throw err;
 
                     var cityLevelObject = {}; //this will be used to create 4 objects /marks with respect to school,city,district,state//class will be used for national ranking 
@@ -68,7 +69,7 @@ router.post('/generateRanking', (req, res) => {
                                     }
 
                                 }
-                                else{
+                                else {
                                     // document[individualField] = null;
                                 }
 
@@ -78,55 +79,55 @@ router.post('/generateRanking', (req, res) => {
 
                         // if (validForRanking === 1) {    // to check if the mark ssare enetered and not just selecetd 
 
-                            if (!(cityLevelObject[document.CLASS])) { //sort bottom level object for each 
+                        if (!(cityLevelObject[document.CLASS])) { //sort bottom level object for each 
 
-                                cityLevelObject[document.CLASS] = { [document.STATE]: { [document.DISTRICT]: { [document.CITY]: { "document": [document] } } } };
+                            cityLevelObject[document.CLASS] = { [document.STATE]: { [document.DISTRICT]: { [document.CITY]: { "document": [document] } } } };
 
-                                districtLevelObject[document.CLASS] = { [document.STATE]: { [document.DISTRICT]: { "document": [document] } } };
+                            districtLevelObject[document.CLASS] = { [document.STATE]: { [document.DISTRICT]: { "document": [document] } } };
 
-                                stateLevelObject[document.CLASS] = { [document.STATE]: { "document": [document] } };
+                            stateLevelObject[document.CLASS] = { [document.STATE]: { "document": [document] } };
 
-                                classLevelObject[document.CLASS] = { "document": [document] };
-                            }
-                            else if (!(cityLevelObject[document.CLASS][document.STATE])) {
+                            classLevelObject[document.CLASS] = { "document": [document] };
+                        }
+                        else if (!(cityLevelObject[document.CLASS][document.STATE])) {
 
-                                cityLevelObject[document.CLASS][document.STATE] = { [document.DISTRICT]: { [document.CITY]: { "document": [document] } } };
+                            cityLevelObject[document.CLASS][document.STATE] = { [document.DISTRICT]: { [document.CITY]: { "document": [document] } } };
 
-                                districtLevelObject[document.CLASS][document.STATE] = { [document.DISTRICT]: { "document": [document] } };
+                            districtLevelObject[document.CLASS][document.STATE] = { [document.DISTRICT]: { "document": [document] } };
 
-                                stateLevelObject[document.CLASS][document.STATE] = { "document": [document] };
+                            stateLevelObject[document.CLASS][document.STATE] = { "document": [document] };
 
-                                classLevelObject[document.CLASS]["document"].push(document);
-                            }
-                            else if (!(cityLevelObject[document.CLASS][document.STATE][document.DISTRICT])) {
+                            classLevelObject[document.CLASS]["document"].push(document);
+                        }
+                        else if (!(cityLevelObject[document.CLASS][document.STATE][document.DISTRICT])) {
 
-                                cityLevelObject[document.CLASS][document.STATE][document.DISTRICT] = { [document.CITY]: { "document": [document] } };
+                            cityLevelObject[document.CLASS][document.STATE][document.DISTRICT] = { [document.CITY]: { "document": [document] } };
 
-                                districtLevelObject[document.CLASS][document.STATE][document.DISTRICT] = { "document": [document] };
+                            districtLevelObject[document.CLASS][document.STATE][document.DISTRICT] = { "document": [document] };
 
-                                stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
+                            stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
 
-                                classLevelObject[document.CLASS]["document"].push(document);
-                            }
-                            else if (!(cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY])) {
+                            classLevelObject[document.CLASS]["document"].push(document);
+                        }
+                        else if (!(cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY])) {
 
-                                cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY] = { "document": [document] };
+                            cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY] = { "document": [document] };
 
-                                districtLevelObject[document.CLASS][document.STATE][document.DISTRICT]["document"].push(document);
+                            districtLevelObject[document.CLASS][document.STATE][document.DISTRICT]["document"].push(document);
 
-                                stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
+                            stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
 
-                                classLevelObject[document.CLASS]["document"].push(document);
-                            }
-                            else {
-                                cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY]["document"].push(document);
+                            classLevelObject[document.CLASS]["document"].push(document);
+                        }
+                        else {
+                            cityLevelObject[document.CLASS][document.STATE][document.DISTRICT][document.CITY]["document"].push(document);
 
-                                districtLevelObject[document.CLASS][document.STATE][document.DISTRICT]["document"].push(document);
+                            districtLevelObject[document.CLASS][document.STATE][document.DISTRICT]["document"].push(document);
 
-                                stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
+                            stateLevelObject[document.CLASS][document.STATE]["document"].push(document);
 
-                                classLevelObject[document.CLASS]["document"].push(document);
-                            }
+                            classLevelObject[document.CLASS]["document"].push(document);
+                        }
                         // }
                     }
                     // console.log(JSON.stringify(cityLevelObject, null, 3));
@@ -628,7 +629,7 @@ router.post('/generateRanking', (req, res) => {
 
                             }
 
-                           
+
                         }
                         // console.log(classLevelObject[studentClass]["document"], "class");
 
@@ -641,62 +642,65 @@ router.post('/generateRanking', (req, res) => {
                     }
                     // console.log(JSON.stringify(classLevelObject,null,3));
 
-                   
-                     MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
+
+                    MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
                         if (err) throw err;
-        
-                        var dbo = db.db("RankDatabase");
-        
-                        for (studentclass in classLevelObject){
-                            for (document of classLevelObject[studentclass]["document"]){
-                                for (property in document){
-                                    if (document[property] === 'NA'){
+
+                        var dbo = db.db("students");
+
+                        for (studentclass in classLevelObject) {
+                            for (document of classLevelObject[studentclass]["document"]) {
+                                for (property in document) {
+                                    if (document[property] === 'NA') {
                                         document[property] = null;
                                     }
                                 }
                                 // console.log(document);
-                                
-                                   
-                                   
-                                    let finder = {"_id":document["_id"] }
-                                    delete document["_id"];
-                                    // console.log(finder);
-                                    // console.log(document);
-                                    
-                                    
-        
-                                    
-                                    dbo.collection("ranks")
-                                   
+
+
+
+                                let finder = { "_id": document["_id"] }
+                                delete document["_id"];
+                                // console.log(finder);
+                                // console.log(document);
+
+
+
+
+                                dbo.collection("ranks")
+
                                     .updateOne(
                                         finder,
                                         { $set: document },
                                         { upsert: true, safe: false },
                                         function (err, data) {
-                                          if (err) {
-                                            console.log(err);
-                                          } else {
-                                            console.log("object uploaded");
-                                          }
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                console.log("object uploaded");
+                                            }
                                         }
-                                      )
-                                        
-                                      
-        
-                                
+                                    )
+
+
+
+
                             }
                         }
-                        
-        
+                        var lastSeconds = new Date().getTime() / 1000;
+                        logger.info(`time taken ${lastSeconds - seconds}`);
+                        logger.info("");
+
+
                         db.close();
-        
+
                     })
-        
-                   
 
 
 
-                    res.end();
+
+                    setTimeout(()=>{res.send("randing generated you may now download the file")},10000)
+                    // res.end();
 
                 })
             })

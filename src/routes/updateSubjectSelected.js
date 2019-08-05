@@ -3,9 +3,11 @@
 let express = require('express')
 let router = express.Router()
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb+srv://davis66:Dddarren9@dave-ggjzh.mongodb.net/new";
+const url = require('../config/config').simpleURI;;
 const formidable = require('formidable')
 const excelToJson = require('convert-excel-to-json');
+const logger = require("../config/config").logger;
+
 
 var uploadedFile;
 
@@ -29,23 +31,28 @@ router.post('/updateSubjectSelected', (req, res) => {
 
 
         .on('file', (name, file) => {
-            console.log('Uploaded file', name, file.name)
+            logger.info(`Uploaded file: ${file.name}`)
             // var fileName= file.name;
 
             uploadedFile = file;
         })
         .on('aborted', () => {
-            console.error('Request aborted by the user')
+            logger.error('Request aborted by the user')
         })
         .on('error', (err) => {
-            console.error('Error', err)
+            logger.error('Error', err)
             throw err
         })
         .on('end', () => {
             // console.log(uploadedFile);
             //to check if the files uploaded is xlsx if not it doesnt process further 
+
+
+            var seconds = new Date().getTime() / 1000;
+
             var indexOfDot = uploadedFile.name.indexOf(".");
             if (uploadedFile.name.substring(indexOfDot + 1) !== "xlsx") {
+                logger.info("the file is not .xlsx format");
                 return res.status(400).send('the file uploaded is not a .xlsx');
             }
             /////////////////////////////////////////////////////////////
@@ -71,13 +78,13 @@ router.post('/updateSubjectSelected', (req, res) => {
 
             //to get data which is in the form of sheets we need the keys  
             let sheets = Object.keys(excelData)
-            console.log(sheets);  // gives sheetes array 
+            logger.info(`${sheets}, sheets in the excel sheet`);  // gives sheetes array 
 
             //ARRAY OF OBJECTS //this piece of code adds the required data
             for (dataFromSheets of sheets) {
-                console.log(dataFromSheets)
+                // console.log(dataFromSheets)
                 for (individualObjects of excelData[dataFromSheets]) {
-                    console.log(individualObjects)
+                    // console.log(individualObjects)
 
 
                     if (individualObjects["NAME OF STUDENTS"] && individualObjects["SCHOOL NAME"] && individualObjects["CLASS"] && individualObjects["DISTRICT"] && individualObjects["CITY"] && individualObjects["STATE"] && individualObjects["SEAT NO"]) {
@@ -102,12 +109,12 @@ router.post('/updateSubjectSelected', (req, res) => {
                         // console.log(individualObjects["_id"].substring(0,2));
                     }
                     else {
-                        console.log(individualObjects, "3");
+                        // console.log(individualObjects, "3");
                     }
                     for (individualObjectKey in individualObjects) {
                         if (individualObjectKey.indexOf("MARKS") !== -1) {
                             individualObjectKeyToCheck = individualObjectKey.substring(0, ((individualObjectKey.indexOf("MARKS")) - 1));
-                            
+
                         }
                         else {
                             individualObjectKeyToCheck = individualObjectKey.substring(0);
@@ -117,7 +124,7 @@ router.post('/updateSubjectSelected', (req, res) => {
 
                         if (["_id", "NAME OF STUDENTS", "SCHOOL NAME", "CLASS", "STATE", "DISTRICT", "CITY", "SEC", "GK", "MATHS", "SCIENCE"].indexOf(individualObjectKeyToCheck) === -1) {
                             // if (["_id", "NAME OF STUDENTS", "SCHOOL NAME", "CLASS", "STATE", "DISTRICT", "CITY", "SEC"].indexOf(individualObjectKey) === -1 && individualObjectKey.indexof("MARKS") === -1 ) {
-                            console.log("key value deleted ", individualObjectKey, individualObjects[individualObjectKey])
+                            // console.log("key value deleted ", individualObjectKey, individualObjects[individualObjectKey])
                             delete individualObjects[individualObjectKey];  //will surely delete seat number as we do not require seat number but _id
 
                         }
@@ -129,33 +136,36 @@ router.post('/updateSubjectSelected', (req, res) => {
             MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
                 if (err) throw err;
 
-                var dbo = db.db("new");
+                var dbo = db.db("students");
+                let rejected = 0;
+
 
                 for (sheet of sheets) {
 
+
                     for (document of excelData[sheet]) {
-                        console.log(document);
+                        // console.log(document);
                         if (document["NAME OF STUDENTS"] && document["SCHOOL NAME"] && document["CLASS"] && document["DISTRICT"] && document["CITY"] && document["STATE"] && document["_id"]) {
 
 
                             let finder = { "_id": document["_id"] }
                             delete document["_id"];
                             // console.log(finder);
-                            console.log(document);
+                            // console.log(document);
 
 
 
-                            dbo.collection("customers")
+                            dbo.collection("details")
 
                                 .updateOne(
                                     finder,
                                     { $set: document },
-                                    { upsert: true, safe: false },
                                     function (err, data) {
                                         if (err) {
                                             console.log(err);
                                         } else {
-                                            console.log("object uploaded");
+                                            // console.log("object uploaded");
+
                                             // console.log(document)
                                         }
                                     }
@@ -164,10 +174,20 @@ router.post('/updateSubjectSelected', (req, res) => {
 
 
                         }
+                        else {
+                            rejected++;
+                        }
                     }
                 }
+                
                 console.log(uploadedFile.path);
+                if (rejected > 0) {
+                    logger.info(`documents deleted ${rejected}`);
+                }
 
+                var lastSeconds = new Date().getTime() / 1000;
+                logger.info(`time taken ${lastSeconds - seconds}`);
+                logger.info("");
                 db.close();
 
             })
