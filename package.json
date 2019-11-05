@@ -17,7 +17,7 @@
     "express": "^4.17.1",
     "formidable": "^1.2.1",
     "json2xls": "^0.1.2",
-    "mongoose": "^5.6.5",
+    "mongoose": "^5.7.5",
     "multer": "^1.4.2",
     "nodemon": "^1.19.1",
     "tfk-json-to-xlsx": "^2.0.0",
